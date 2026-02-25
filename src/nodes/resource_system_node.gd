@@ -11,7 +11,6 @@ var current_energy: float
 ## 配置引用
 var player_stats: PlayerStatsResource
 
-
 ## 初始化
 ## 参数：
 ##   stats: 玩家配置Resource（深拷贝）
@@ -21,20 +20,20 @@ func setup(stats: PlayerStatsResource) -> void:
 	current_shield = player_stats.max_shield
 	current_energy = player_stats.max_energy
 
-
 ## 处理能量恢复
 ## 遵循F.2：由父节点手动调用，不使用_physics_process
 ## 参数：
 ##   delta: 帧时间
 func process_regeneration(delta: float) -> void:
 	# 能量恢复逻辑
+	if player_stats == null:
+		return
 	if current_energy < player_stats.max_energy:
 		current_energy = min(
 			current_energy + player_stats.energy_regen_rate * delta,
 			player_stats.max_energy
 		)
-	EventBus.player_energy_changed.emit(current_energy)
-
+		EventBus.player_energy_changed.emit(current_energy)
 
 ## 受到伤害
 ## 参数：
@@ -42,6 +41,8 @@ func process_regeneration(delta: float) -> void:
 ##   damage_type: 伤害类型
 ## 遵循F.3：状态持有者负责发射事件
 func take_damage(amount: float, _damage_type: String = "normal") -> void:
+	if player_stats == null:
+		return
 	# 先扣护盾
 	if current_shield > 0:
 		var shield_damage: float = min(current_shield, amount)
@@ -60,22 +61,24 @@ func take_damage(amount: float, _damage_type: String = "normal") -> void:
 		if current_health <= 0:
 			EventBus.player_died.emit()
 
-
 ## 消耗能量
 ## 参数：
 ##   amount: 消耗的能量值
 ## 返回: 是否消耗成功
 func consume_energy(amount: float) -> bool:
+	if player_stats == null:
+		return false
 	if current_energy >= amount:
 		current_energy -= amount
 		EventBus.player_energy_changed.emit(current_energy)
 		return true
 	return false
 
-
 ## 恢复生命值
 ## 参数：
 ##   amount: 恢复的生命值
 func restore_health(amount: float) -> void:
+	if player_stats == null:
+		return
 	current_health = min(current_health + amount, player_stats.max_health)
 	EventBus.player_health_changed.emit(current_health)

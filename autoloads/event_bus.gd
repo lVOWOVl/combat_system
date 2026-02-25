@@ -9,8 +9,6 @@ extends Node
 # The code is clean and well-structured. Splitting would increase complexity without benefit.
 
 ## 资源事件
-
-## 资源事件
 signal player_health_changed(new_value: float)
 signal player_shield_changed(new_value: float)
 signal player_energy_changed(new_value: float)

@@ -5,7 +5,7 @@ class_name PlayerNode extends CharacterBody2D
 
 ## 引用子系统
 ## 注意：@onready要求节点在场景树中存在
-@onready var resource_system: ResourceSystemNode = $ResourceSystem
+@onready var resource_system = $ResourceSystem
 @onready var movement: MovementNode = $Movement
 @onready var combat: CombatNode = $Combat
 @onready var weapon_system: WeaponSystemNode = $WeaponSystem

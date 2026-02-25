@@ -1,7 +1,7 @@
 # test_player_integration.gd
 # PlayerNode集成测试
 
-extends gut_test
+extends GutTest
 
 var player_scene: PackedScene
 var player: PlayerNode

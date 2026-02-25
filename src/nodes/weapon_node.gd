@@ -23,8 +23,8 @@ func setup(data: WeaponDataResource) -> void:
 
 ## 执行攻击
 ## 返回: 攻击数据
-func perform_attack() -> CombatNode.AttackData:
-	var attack_data: AttackData = CombatNode.AttackData.new()
+func perform_attack() -> AttackData:
+	var attack_data: AttackData = AttackData.new()
 
 	# 基础伤害
 	attack_data.damage = weapon_data.base_damage

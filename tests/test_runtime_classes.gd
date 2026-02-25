@@ -1,7 +1,7 @@
 # test_runtime_classes.gd
 # Runtime类单元测试
 
-extends gut_test
+extends GutTest
 
 var material_runtime: MaterialRuntime
 var gem_runtime: GemRuntime

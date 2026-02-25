@@ -2,7 +2,7 @@
 # 服务定位器（Autoload单例）
 # 提供全局服务访问，如数据加载器、Resource管理等
 
-extends Object
+extends Node
 
 ## 服务存储字典
 var _services: Dictionary = {}

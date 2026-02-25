@@ -1,15 +1,13 @@
 # test_resource_system.gd
 # ResourceSystemNode单元测试
 
-extends gut_test
+extends GutTest
 
 ## 测试常量
 const DEFAULT_MAX_HEALTH: float = 100.0
 const DEFAULT_MAX_SHIELD: float = 50.0
 const DEFAULT_MAX_ENERGY: float = 100.0
 const DEFAULT_ENERGY_REGEN_RATE: float = 10.0
-
-var resource_system: ResourceSystemNode
 
 var resource_system: ResourceSystemNode
 var test_stats: PlayerStatsResource
@@ -22,12 +20,6 @@ func before_each() -> void:
 	test_stats.max_shield = DEFAULT_MAX_SHIELD
 	test_stats.max_energy = DEFAULT_MAX_ENERGY
 	test_stats.energy_regen_rate = DEFAULT_ENERGY_REGEN_RATE
-	# 创建测试数据
-	test_stats = PlayerStatsResource.new()
-	test_stats.max_health = 100.0
-	test_stats.max_shield = 50.0
-	test_stats.max_energy = 100.0
-	test_stats.energy_regen_rate = 10.0
 
 	# 创建ResourceSystem实例
 	resource_system = ResourceSystemNode.new()
@@ -41,8 +33,6 @@ func test_setup() -> void:
 	assert_eq(resource_system.current_health, DEFAULT_MAX_HEALTH)
 	assert_eq(resource_system.current_shield, DEFAULT_MAX_SHIELD)
 	assert_eq(resource_system.current_energy, DEFAULT_MAX_ENERGY)
-	assert_eq(resource_system.current_shield, 50.0)
-	assert_eq(resource_system.current_energy, 100.0)
 
 
 func test_take_damage_health_only() -> void:
@@ -51,7 +41,7 @@ func test_take_damage_health_only() -> void:
 	resource_system.take_damage(30.0, "normal")
 
 	assert_eq(resource_system.current_health, 70.0)
-	assert_eq(resource_system.current_shield, 50.0)
+	assert_eq(resource_system.current_shield, DEFAULT_MAX_SHIELD)
 
 
 func test_take_damage_shield_absorbed() -> void:
@@ -60,7 +50,7 @@ func test_take_damage_shield_absorbed() -> void:
 	resource_system.take_damage(30.0, "normal")
 
 	assert_eq(resource_system.current_shield, 20.0)
-	assert_eq(resource_system.current_health, 100.0)  # 生命值未受影响
+	assert_eq(resource_system.current_health, DEFAULT_MAX_HEALTH)  # 生命值未受影响
 
 
 func test_take_damage_both_shield_and_health() -> void:

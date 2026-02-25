@@ -1,7 +1,7 @@
 # test_weapon_system.gd
 # WeaponSystem和WeaponNode测试
 
-extends gut_test
+extends GutTest
 
 var weapon_system: WeaponSystemNode
 var main_hand: WeaponNode
@@ -58,7 +58,7 @@ func test_weapon_setup() -> void:
 
 func test_weapon_perform_attack() -> void:
 	# 测试武器攻击
-	var attack_data: CombatNode.AttackData = main_hand.perform_attack()
+	var attack_data: AttackData = main_hand.perform_attack()
 
 	assert_not_null(attack_data)
 	assert_eq(attack_data.damage, 10.0)  # 基础伤害
@@ -68,7 +68,7 @@ func test_weapon_perform_attack() -> void:
 
 func test_weapon_with_components() -> void:
 	# 测试带部件的武器
-	var attack_data: CombatNode.AttackData = main_hand.perform_attack()
+	var attack_data: AttackData = main_hand.perform_attack()
 
 	# 材料修正: 10.0 + 5.0 = 15.0
 	assert_eq(attack_data.damage, 15.0)
@@ -78,7 +78,7 @@ func test_weapon_attack_speed() -> void:
 	# 测试攻击速度
 	weapon_data.attack_speed = 2.0
 	main_hand.setup(weapon_data)
-	var attack_data: CombatNode.AttackData = main_hand.perform_attack()
+	var attack_data: AttackData = main_hand.perform_attack()
 
 	assert_eq(attack_data.recovery_time, 0.5)  # 1.0 / 2.0
 
