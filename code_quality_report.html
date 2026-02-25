@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDScript Linter - Code Quality Report</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; padding: 20px; line-height: 1.6; }
+.container { max-width: 1200px; margin: 0 auto; }
+h1 { color: #00d4ff; margin-bottom: 10px; }
+h2 { color: #888; font-size: 1.2em; margin: 20px 0 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+.header { text-align: center; margin-bottom: 30px; }
+.subtitle { color: #888; font-size: 0.9em; }
+.filters { background: #16213e; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+.filters label { color: #aaa; font-size: 0.95em; font-weight: bold; }
+.filters select, .filters input { background: #0f3460; border: 1px solid #333; color: #eee; padding: 8px 12px; border-radius: 4px; font-size: 0.9em; }
+.filters input { min-width: 400px; }
+.filters select:focus, .filters input:focus { outline: none; border-color: #00d4ff; }
+.filter-count { color: #00d4ff; font-weight: bold; margin-left: auto; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
+.stat-card { background: #16213e; border-radius: 8px; padding: 15px; text-align: center; }
+.stat-card .value { font-size: 2em; font-weight: bold; }
+.stat-card .label { color: #888; font-size: 0.85em; }
+.stat-card.critical .value { color: #ff6b6b; }
+.stat-card.warning .value { color: #ffd93d; }
+.stat-card.info .value { color: #6bcb77; }
+.issues-section { margin-bottom: 30px; }
+.section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+.section-header .icon { font-size: 1.5em; }
+.section-header.critical { color: #ff6b6b; }
+.section-header.warning { color: #ffd93d; }
+.section-header.info { color: #6bcb77; }
+.section-header .count { font-size: 0.8em; color: #888; }
+.issue { background: #16213e; border-radius: 6px; padding: 12px 15px; margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 10px; }
+.issue.hidden { display: none; }
+.issue .location { font-family: 'Consolas', 'Monaco', monospace; font-size: 0.85em; color: #00d4ff; min-width: 300px; word-break: break-all; }
+.issue .message { flex: 1; color: #ccc; }
+.issue .check-id { font-size: 0.75em; background: #0f3460; padding: 2px 8px; border-radius: 4px; color: #888; }
+.footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #333; color: #666; font-size: 0.85em; }
+.footer a { color: #00d4ff; text-decoration: none; }
+.no-results { text-align: center; color: #666; padding: 40px; }
+.context-section { background: #16213e; border-radius: 8px; padding: 20px; margin-bottom: 30px; border-left: 4px solid #00d4ff; }
+.context-section h2 { color: #00d4ff; margin-bottom: 15px; font-size: 1.1em; border: none; }
+.context-section pre { background: #0f3460; padding: 15px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.85em; color: #ccc; max-height: 300px; overflow-y: auto; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>🔷 GDScript Linter</h1>
+<p class="subtitle">Code Quality Report</p>
+</div>
+
+<div class="summary">
+<div class="stat-card"><div class="value">21</div><div class="label">Files Analyzed</div></div>
+<div class="stat-card"><div class="value">1030</div><div class="label">Lines of Code</div></div>
+<div class="stat-card critical"><div class="value">0</div><div class="label">Critical Issues</div></div>
+<div class="stat-card warning"><div class="value">2</div><div class="label">Warnings</div></div>
+<div class="stat-card info"><div class="value">140</div><div class="label">Info</div></div>
+<div class="stat-card"><div class="value">10</div><div class="label">Debt Score</div></div>
+</div>
+
+<div class="filters">
+<label>Severity:</label>
+<select id="severityFilter" onchange="onSeverityChange()">
+<option value="all">All Severities</option>
+<option value="critical">Critical</option>
+<option value="warning">Warning</option>
+<option value="info">Info</option>
+</select>
+<label>Type:</label>
+<select id="typeFilter" onchange="applyFilters()">
+<option value="all">All Types</option>
+</select>
+<label>File:</label>
+<input type="text" id="fileFilter" placeholder="Filter by filename..." oninput="applyFilters()">
+<span class="filter-count" id="filterCount"></span>
+</div>
+
+<div id="issuesContainer">
+<div class="context-section">
+<h2>📋 Analysis Context</h2>
+<pre>分析代码问题时，既要考虑快速修复，也要考虑架构改进：
+
+1. **整体评估代码**——在建议添加忽略指令前，先问问自己：
+   - 能否通过提取代码提高可测试性或复用性？
+   - 这个文件是否承担了多个本应分离的职责？
+   - 引入组件或辅助类是否能让代码更容易扩展？
+   - 复杂度的背后是否隐藏着设计缺陷？
+
+2. **以下情况适合添加忽略指令：**
+   - 代码本身整洁可读，只是轻微超出限制
+   - 提取代码只会增加复杂度，没有明确好处
+   - “违规”是领域本身的特性（例如大型枚举文件）
+
+3. **以下情况适合重构：**
+   - 多个职责纠缠在一起
+   - 同一段代码频繁被修改
+   - 测试时需要模拟整个类
+   - 新功能总是触及同一个文件
+
+无论是推荐重构还是添加忽略指令，都要解释你的理由。
+
+**必要步骤：**
+- 在添加任何忽略指令前，阅读 `res://addons/gdscript-linter/docs/IGNORE_RULES.md` 确保语法正确
+- 完成修改后，按照 `res://addons/gdscript-linter/docs/CLI.md` 中的选项通过命令行运行检查器</pre>
+</div>
+<div class="issues-section" data-severity="warning"><div class="section-header warning"><span class="icon">🟡</span><h2>Warnings (<span class="count">2</span>)</h2></div>
+<div class="issue" data-severity="warning" data-type="god-class-signals" data-file="res://autoloads/event_bus.gd"><span class="location">res://autoloads/event_bus.gd:1</span><span class="message">God class: 19 signals (max 10)</span><span class="check-id">god-class-signals</span></div>
+<div class="issue" data-severity="warning" data-type="long-function" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:14</span><span class="message">Function 'before_each' exceeds 30 lines (33)</span><span class="check-id">long-function</span></div>
+</div>
+<div class="issues-section" data-severity="info"><div class="section-header info"><span class="icon">🔵</span><h2>Info (<span class="count">140</span>)</h2></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/nodes/combat_node.gd"><span class="location">res://src/nodes/combat_node.gd:37</span><span class="message">Variable 'weapon' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://src/nodes/combat_node.gd"><span class="location">res://src/nodes/combat_node.gd:42</span><span class="message">Magic number 10.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/nodes/combat_node.gd"><span class="location">res://src/nodes/combat_node.gd:42</span><span class="message">Variable 'energy_cost' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/nodes/combat_node.gd"><span class="location">res://src/nodes/combat_node.gd:48</span><span class="message">Variable 'attack_data' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://src/nodes/combat_node.gd"><span class="location">res://src/nodes/combat_node.gd:58</span><span class="message">Magic number 50.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/nodes/combat_node.gd"><span class="location">res://src/nodes/combat_node.gd:58</span><span class="message">Variable 'energy_cost' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/nodes/combat_node.gd"><span class="location">res://src/nodes/combat_node.gd:65</span><span class="message">Variable 'attack_data' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://src/nodes/combat_node.gd"><span class="location">res://src/nodes/combat_node.gd:66</span><span class="message">Magic number 50.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://src/nodes/combat_node.gd"><span class="location">res://src/nodes/combat_node.gd:68</span><span class="message">Magic number 5 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="unused-parameter" data-file="res://src/nodes/combat_node.gd"><span class="location">res://src/nodes/combat_node.gd:22</span><span class="message">Parameter 'delta' is declared but never used</span><span class="check-id">unused-parameter</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://src/nodes/movement_node.gd"><span class="location">res://src/nodes/movement_node.gd:11</span><span class="message">Magic number 200.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://src/nodes/movement_node.gd"><span class="location">res://src/nodes/movement_node.gd:12</span><span class="message">Magic number 10.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://src/nodes/movement_node.gd"><span class="location">res://src/nodes/movement_node.gd:13</span><span class="message">Magic number 20.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://src/nodes/movement_node.gd"><span class="location">res://src/nodes/movement_node.gd:14</span><span class="message">Magic number 400.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/nodes/movement_node.gd"><span class="location">res://src/nodes/movement_node.gd:26</span><span class="message">Variable 'direction' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/nodes/movement_node.gd"><span class="location">res://src/nodes/movement_node.gd:29</span><span class="message">Variable 'target_velocity' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/nodes/resource_system_node.gd"><span class="location">res://src/nodes/resource_system_node.gd:47</span><span class="message">Variable 'shield_damage' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="unused-parameter" data-file="res://src/nodes/resource_system_node.gd"><span class="location">res://src/nodes/resource_system_node.gd:44</span><span class="message">Parameter 'damage_type' is declared but never used</span><span class="check-id">unused-parameter</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/nodes/weapon_node.gd"><span class="location">res://src/nodes/weapon_node.gd:27</span><span class="message">Variable 'attack_data' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/nodes/weapon_node.gd"><span class="location">res://src/nodes/weapon_node.gd:33</span><span class="message">Variable 'modifiers' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/systems/component_system.gd"><span class="location">res://src/systems/component_system.gd:15</span><span class="message">Variable 'instance' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/systems/component_system.gd"><span class="location">res://src/systems/component_system.gd:24</span><span class="message">Variable 'total_modifiers' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/systems/component_system.gd"><span class="location">res://src/systems/component_system.gd:27</span><span class="message">Variable 'modifiers' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/systems/component_system.gd"><span class="location">res://src/systems/component_system.gd:63</span><span class="message">Variable 'modifiers' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://src/systems/material_runtime.gd"><span class="location">res://src/systems/material_runtime.gd:16</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://src/systems/material_runtime.gd"><span class="location">res://src/systems/material_runtime.gd:22</span><span class="message">Variable 'stats' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://src/systems/material_runtime.gd"><span class="location">res://src/systems/material_runtime.gd:24</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:22</span><span class="message">Variable 'player_stats' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:23</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:24</span><span class="message">Magic number 50.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:25</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:26</span><span class="message">Magic number 10.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:38</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:43</span><span class="message">Magic number 20.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:44</span><span class="message">Magic number 80.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:50</span><span class="message">Magic number 200.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:58</span><span class="message">Magic number 0.016 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:10</span><span class="message">Function 'before_each' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:30</span><span class="message">Function 'test_player_setup' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:36</span><span class="message">Function 'test_player_health_initialization' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:41</span><span class="message">Function 'test_player_take_damage' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:47</span><span class="message">Function 'test_player_die' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:55</span><span class="message">Function 'test_player_physics_process' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:62</span><span class="message">Function 'test_player_subsystems_exist' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:70</span><span class="message">Function 'after_each' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_player_integration.gd"><span class="location">res://tests/test_player_integration.gd:75</span><span class="message">Function 'after_all' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:13</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:14</span><span class="message">Magic number 50.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:15</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:16</span><span class="message">Magic number 10.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:27</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:28</span><span class="message">Magic number 50.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:29</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:35</span><span class="message">Magic number 30.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:37</span><span class="message">Magic number 70.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:38</span><span class="message">Magic number 50.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:44</span><span class="message">Magic number 30.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:46</span><span class="message">Magic number 20.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:47</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:53</span><span class="message">Magic number 70.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:56</span><span class="message">Magic number 80.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:64</span><span class="message">Magic number 200.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:73</span><span class="message">Magic number 30.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:73</span><span class="message">Variable 'result' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:76</span><span class="message">Magic number 70.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:82</span><span class="message">Magic number 150.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:82</span><span class="message">Variable 'result' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:85</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:91</span><span class="message">Magic number 30.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:92</span><span class="message">Magic number 20.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:94</span><span class="message">Magic number 90.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:100</span><span class="message">Magic number 30.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:101</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:103</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:109</span><span class="message">Magic number 50.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:112</span><span class="message">Magic number 60.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:118</span><span class="message">Magic number 5.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:121</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:10</span><span class="message">Function 'before_each' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:23</span><span class="message">Function 'test_setup' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:32</span><span class="message">Function 'test_take_damage_health_only' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:41</span><span class="message">Function 'test_take_damage_shield_absorbed' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:50</span><span class="message">Function 'test_take_damage_both_shield_and_health' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:59</span><span class="message">Function 'test_take_damage_lethal' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:70</span><span class="message">Function 'test_consume_energy_success' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:79</span><span class="message">Function 'test_consume_energy_insufficient' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:88</span><span class="message">Function 'test_restore_health' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:97</span><span class="message">Function 'test_restore_health_overflow' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:106</span><span class="message">Function 'test_energy_regen' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:115</span><span class="message">Function 'test_energy_regen_max_limit' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_resource_system.gd"><span class="location">res://tests/test_resource_system.gd:124</span><span class="message">Function 'after_each' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:16</span><span class="message">Magic number 10.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:20</span><span class="message">Magic number 5.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:32</span><span class="message">Magic number 100.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:38</span><span class="message">Variable 'stats' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:40</span><span class="message">Magic number 10.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:46</span><span class="message">Magic number 50.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:47</span><span class="message">Variable 'stats' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:49</span><span class="message">Magic number 5.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:63</span><span class="message">Variable 'effects' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:65</span><span class="message">Magic number 5.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:66</span><span class="message">Magic number 0.05 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:73</span><span class="message">Variable 'effects' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:12</span><span class="message">Function 'before_each' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:27</span><span class="message">Function 'test_material_runtime_setup' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:35</span><span class="message">Function 'test_material_runtime_get_stats_full_durability' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:43</span><span class="message">Function 'test_material_runtime_get_stats_half_durability' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:52</span><span class="message">Function 'test_gem_runtime_setup' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:60</span><span class="message">Function 'test_gem_runtime_get_effects_active' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:69</span><span class="message">Function 'test_gem_runtime_get_effects_inactive' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_runtime_classes.gd"><span class="location">res://tests/test_runtime_classes.gd:78</span><span class="message">Function 'after_each' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:18</span><span class="message">Magic number 10.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:28</span><span class="message">Magic number 5.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:55</span><span class="message">Variable 'attack_data' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:58</span><span class="message">Magic number 10.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:65</span><span class="message">Variable 'attack_data' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:68</span><span class="message">Magic number 15.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:75</span><span class="message">Variable 'attack_data' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:82</span><span class="message">Variable 'weapon' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:88</span><span class="message">Variable 'weapon' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:97</span><span class="message">Variable 'current' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:107</span><span class="message">Variable 'current' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:113</span><span class="message">Variable 'weapon2' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:117</span><span class="message">Magic number 999.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:120</span><span class="message">Magic number 999.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-type-hint" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:125</span><span class="message">Variable 'modifiers' has no type annotation</span><span class="check-id">missing-type-hint</span></div>
+<div class="issue" data-severity="info" data-type="magic-number" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:128</span><span class="message">Magic number 5.0 (consider using a named constant)</span><span class="check-id">magic-number</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:14</span><span class="message">Function 'before_each' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:47</span><span class="message">Function 'test_weapon_setup' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:53</span><span class="message">Function 'test_weapon_perform_attack' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:63</span><span class="message">Function 'test_weapon_with_components' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:71</span><span class="message">Function 'test_weapon_attack_speed' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:80</span><span class="message">Function 'test_weapon_system_get_main_hand' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:86</span><span class="message">Function 'test_weapon_system_get_off_hand' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:92</span><span class="message">Function 'test_weapon_system_switch_weapon' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:101</span><span class="message">Function 'test_weapon_system_switch_back' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:111</span><span class="message">Function 'test_weapon_deep_copy' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:123</span><span class="message">Function 'test_component_system_modifiers' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:131</span><span class="message">Function 'after_each' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+<div class="issue" data-severity="info" data-type="missing-return-type" data-file="res://tests/test_weapon_system.gd"><span class="location">res://tests/test_weapon_system.gd:136</span><span class="message">Function 'after_all' has no return type annotation</span><span class="check-id">missing-return-type</span></div>
+</div>
+</div>
+<div id="noResults" class="no-results" style="display:none;">No issues match the current filters</div>
+
+<div class="footer">
+<p>Generated by <a href="https://poplava.itch.io">GDScript Linter</a> in 38ms</p>
+</div>
+</div>
+
+<script>
+// Type name mapping and severity->types data for linked filtering
+const TYPE_NAMES = {"god-class-signals":"god-class-signals","missing-type-hint":"Missing Type Hint","magic-number":"Magic Number","unused-parameter":"Unused Parameter","missing-return-type":"Missing Return Type","long-function":"Long Function"};
+const SEVERITY_TYPES = {"all":["god-class-signals","long-function","magic-number","missing-return-type","missing-type-hint","unused-parameter"],"critical":[],"warning":["god-class-signals","long-function"],"info":["magic-number","missing-return-type","missing-type-hint","unused-parameter"]};
+
+function populateTypeFilter(severity) {
+	const typeFilter = document.getElementById('typeFilter');
+	const prevValue = typeFilter.value;
+
+	// Clear and rebuild options
+	typeFilter.innerHTML = '<option value="all">All Types</option>';
+
+	const types = SEVERITY_TYPES[severity] || [];
+	types.forEach(checkId => {
+		const option = document.createElement('option');
+		option.value = checkId;
+		option.textContent = TYPE_NAMES[checkId] || checkId;
+		typeFilter.appendChild(option);
+	});
+
+	// Try to restore previous selection if it still exists
+	const options = Array.from(typeFilter.options);
+	const found = options.find(opt => opt.value === prevValue);
+	if (found) {
+		typeFilter.value = prevValue;
+	} else {
+		typeFilter.value = 'all';
+	}
+}
+
+function onSeverityChange() {
+	const severity = document.getElementById('severityFilter').value;
+	populateTypeFilter(severity);
+	applyFilters();
+}
+
+function applyFilters() {
+	const severity = document.getElementById('severityFilter').value;
+	const type = document.getElementById('typeFilter').value;
+	const file = document.getElementById('fileFilter').value.toLowerCase();
+
+	const issues = document.querySelectorAll('.issue');
+	let visibleCount = 0;
+
+	issues.forEach(issue => {
+		const issueSeverity = issue.dataset.severity;
+		const issueType = issue.dataset.type;
+		const issueFile = issue.dataset.file.toLowerCase();
+
+		const matchSeverity = severity === 'all' || issueSeverity === severity;
+		const matchType = type === 'all' || issueType === type;
+		const matchFile = file === '' || issueFile.includes(file);
+
+		if (matchSeverity && matchType && matchFile) {
+			issue.classList.remove('hidden');
+			visibleCount++;
+		} else {
+			issue.classList.add('hidden');
+		}
+	});
+
+	// Update section visibility and counts
+	document.querySelectorAll('.issues-section').forEach(section => {
+		const visibleInSection = section.querySelectorAll('.issue:not(.hidden)').length;
+		section.querySelector('.count').textContent = visibleInSection;
+		section.style.display = visibleInSection > 0 ? 'block' : 'none';
+	});
+
+	// Show/hide no results message
+	document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+
+	// Update filter count
+	const total = issues.length;
+	document.getElementById('filterCount').textContent = visibleCount === total ? '' : visibleCount + ' / ' + total + ' shown';
+}
+
+// Initialize
+populateTypeFilter('all');
+applyFilters();
+</script>
+</body>
+</html>

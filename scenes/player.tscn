@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvwk8q3o5rjky"]
+
+[ext_resource type="Script" path="res://src/nodes/player_node.gd" id="1_5x8w7"]
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_5x8w7")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CollisionShape2D_shape_1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="ResourceSystem" type="Node" parent="."]
+script = ExtResource("2_x7k9m")
+
+[node name="Movement" type="Node" parent="."]
+script = ExtResource("3_l8j5p")
+
+[node name="Combat" type="Node" parent="."]
+script = ExtResource("4_m6n3q")
+
+[node name="WeaponSystem" type="Node" parent="."]
+script = ExtResource("5_h4j7r")
+
+[node name="MainHand" type="Node2D" parent="WeaponSystem"]
+script = ExtResource("6_d9f2s")
+
+[node name="Sprite2D" type="Sprite2D" parent="WeaponSystem/MainHand"]
+
+[node name="OffHand" type="Node2D" parent="WeaponSystem"]
+script = ExtResource("7_b3k1t")
+
+[node name="Sprite2D" type="Sprite2D" parent="WeaponSystem/OffHand"]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[sub_resource type="CircleShape2D" id="CollisionShape2D_shape_1"]
+radius = 16.0
+
+[ext_resource type="Script" path="res://src/nodes/resource_system_node.gd" id="2_x7k9m"]
+[ext_resource type="Script" path="res://src/nodes/movement_node.gd" id="3_l8j5p"]
+[ext_resource type="Script" path="res://src/nodes/combat_node.gd" id="4_m6n3q"]
+[ext_resource type="Script" path="res://src/nodes/weapon_system_node.gd" id="5_h4j7r"]
+[ext_resource type="Script" path="res://src/nodes/weapon_node.gd" id="6_d9f2s"]
+[ext_resource type="Script" path="res://src/nodes/weapon_node.gd" id="7_b3k1t"]
