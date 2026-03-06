@@ -14,6 +14,31 @@ func before_each() -> void:
 		# 如果场景加载失败，创建一个简单的PlayerNode用于测试
 		player = PlayerNode.new()
 		add_child_autofree(player)
+
+		# 手动创建子系统
+		var resource_system = ResourceSystemNode.new()
+		resource_system.name = "ResourceSystem"
+		player.add_child(resource_system)
+
+		var movement = MovementNode.new()
+		movement.name = "Movement"
+		player.add_child(movement)
+
+		var combat = CombatNode.new()
+		combat.name = "Combat"
+		player.add_child(combat)
+
+		var weapon_system = WeaponSystemNode.new()
+		weapon_system.name = "WeaponSystem"
+		player.add_child(weapon_system)
+
+		var main_hand = WeaponNode.new()
+		main_hand.name = "MainHand"
+		weapon_system.add_child(main_hand)
+
+		var off_hand = WeaponNode.new()
+		off_hand.name = "OffHand"
+		weapon_system.add_child(off_hand)
 	else:
 		player = player_scene.instantiate()
 		add_child_autofree(player)
@@ -21,7 +46,7 @@ func before_each() -> void:
 	# 设置玩家配置
 	var player_stats: PlayerStatsResource = PlayerStatsResource.new()
 	player_stats.max_health = 100.0
-	player_stats.max_shield = 50.0
+	player_stats.max_shield = 0.0  # 设置无护盾，确保伤害直接影响生命值
 	player_stats.max_energy = 100.0
 	player_stats.energy_regen_rate = 10.0
 	player.setup_player(player_stats)

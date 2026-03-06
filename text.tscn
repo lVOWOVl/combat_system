@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://cwpgrkxgno0gf"]
+
+[ext_resource type="PackedScene" uid="uid://bvwk8q3o5rjky" path="res://scenes/player.tscn" id="1_aohfb"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g853r"]
+size = Vector2(1092, 169)
+
+[node name="Text" type="Node2D" unique_id=724089572]
+
+[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=379384574]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1330756449]
+position = Vector2(571, 557)
+shape = SubResource("RectangleShape2D_g853r")
+
+[node name="Player" parent="." unique_id=27877294 instance=ExtResource("1_aohfb")]
+position = Vector2(547, 146)

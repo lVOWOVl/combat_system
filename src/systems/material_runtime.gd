@@ -14,7 +14,7 @@ var current_durability: float
 
 ## 初始化
 ## 参数：
-##   data: 材料配置Resource
+## data: 材料配置Resource
 func setup(data: MaterialResource) -> void:
 	material_data = data
 	current_durability = DEFAULT_DURABILITY  # 默认耐久度

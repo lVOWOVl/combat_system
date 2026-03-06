@@ -75,13 +75,13 @@ func test_gem_runtime_get_effects_inactive() -> void:
 	assert_eq(effects.size(), 0)  # 应该返回空字典
 
 
-func after_each() -> void:
-	# 清理
-	if is_instance_valid(material_runtime):
-		material_runtime.free()
-	if is_instance_valid(gem_runtime):
-		gem_runtime.free()
-	if is_instance_valid(test_material_data):
-		test_material_data.free()
-	if is_instance_valid(test_gem_data):
-		test_gem_data.free()
+#func after_each() -> void:
+	## 清理
+	#if is_instance_valid(material_runtime):
+		#material_runtime.free()
+	#if is_instance_valid(gem_runtime):
+		#gem_runtime.free()
+	#if is_instance_valid(test_material_data):
+		#test_material_data.free()
+	#if is_instance_valid(test_gem_data):
+		#test_gem_data.free()

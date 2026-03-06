@@ -45,10 +45,6 @@ func process_movement(delta: float) -> void:
 	# 检查是否在地面
 	is_grounded = player_body.is_on_floor()
 
-	# 检查是否在地面
-	is_grounded = player_body.is_on_floor()
-
-
 ## 跳跃
 func jump() -> void:
 	if is_grounded and can_jump:

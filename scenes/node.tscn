@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://c1md83osw4brk"]
+
+[ext_resource type="PackedScene" uid="uid://ej7ryblgqp83" path="res://img/机甲头.glb" id="1_6r00q"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ignic"]
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_dondh"]
+viewport_path = NodePath("SubViewport")
+
+[node name="Node" type="Node" unique_id=1055980895]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=300371305]
+material = SubResource("ShaderMaterial_ignic")
+position = Vector2(412, 336)
+scale = Vector2(0.3, 0.3)
+texture = SubResource("ViewportTexture_dondh")
+
+[node name="SubViewport" type="SubViewport" parent="." unique_id=794589616]
+transparent_bg = true
+
+[node name="机甲头" parent="SubViewport" unique_id=434356614 instance=ExtResource("1_6r00q")]
+transform = Transform3D(0.8537899, -0.08559742, 0.48544705, 0, 0.9708941, 0.17119484, -0.49293587, -0.14825906, 0.84081894, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="SubViewport" unique_id=463667905]
+transform = Transform3D(-9.508857, 0, 0, 0, 9.508857, 0, 0, 0, -9.508857, 0, 0, -6.0353456)
+projection = 1
+current = true
+size = 8.0

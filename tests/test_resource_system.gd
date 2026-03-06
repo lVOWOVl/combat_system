@@ -36,12 +36,18 @@ func test_setup() -> void:
 
 
 func test_take_damage_health_only() -> void:
-	# 测试纯伤害（无护盾）
-	resource_system.setup(test_stats)
+	# 创建新的测试数据（不污染其他测试）
+	var local_stats: PlayerStatsResource = PlayerStatsResource.new()
+	local_stats.max_health = DEFAULT_MAX_HEALTH
+	local_stats.max_shield = 0.0  # 无护盾
+	local_stats.max_energy = DEFAULT_MAX_ENERGY
+	local_stats.energy_regen_rate = DEFAULT_ENERGY_REGEN_RATE
+	resource_system.setup(local_stats)
+
 	resource_system.take_damage(30.0, "normal")
 
 	assert_eq(resource_system.current_health, 70.0)
-	assert_eq(resource_system.current_shield, DEFAULT_MAX_SHIELD)
+	assert_eq(resource_system.current_shield, 0.0)
 
 
 func test_take_damage_shield_absorbed() -> void:
@@ -54,8 +60,14 @@ func test_take_damage_shield_absorbed() -> void:
 
 
 func test_take_damage_both_shield_and_health() -> void:
-	# 测试伤害超过护盾
-	resource_system.setup(test_stats)
+	# 创建新的测试数据
+	var local_stats: PlayerStatsResource = PlayerStatsResource.new()
+	local_stats.max_health = DEFAULT_MAX_HEALTH
+	local_stats.max_shield = DEFAULT_MAX_SHIELD
+	local_stats.max_energy = DEFAULT_MAX_ENERGY
+	local_stats.energy_regen_rate = DEFAULT_ENERGY_REGEN_RATE
+	resource_system.setup(local_stats)
+
 	resource_system.take_damage(70.0, "normal")
 
 	assert_eq(resource_system.current_shield, 0.0)
@@ -92,13 +104,18 @@ func test_consume_energy_insufficient() -> void:
 
 
 func test_restore_health() -> void:
-	# 测试恢复生命值
-	resource_system.setup(test_stats)
+	# 创建新的测试数据
+	var local_stats: PlayerStatsResource = PlayerStatsResource.new()
+	local_stats.max_health = 100.0
+	local_stats.max_shield = 0.0  # 无护盾，确保伤害直接影响生命值
+	local_stats.max_energy = DEFAULT_MAX_ENERGY
+	local_stats.energy_regen_rate = DEFAULT_ENERGY_REGEN_RATE
+	resource_system.setup(local_stats)
+
 	resource_system.take_damage(30.0, "normal")
 	resource_system.restore_health(20.0)
 
 	assert_eq(resource_system.current_health, 90.0)
-
 
 func test_restore_health_overflow() -> void:
 	# 测试恢复超过最大值
@@ -127,7 +144,7 @@ func test_energy_regen_max_limit() -> void:
 	assert_eq(resource_system.current_energy, DEFAULT_MAX_ENERGY)  # 不超过最大值
 
 
-func after_each() -> void:
-	# 清理
-	if is_instance_valid(test_stats):
-		test_stats.free()
+#func after_each() -> void:
+	## 清理
+	#if is_instance_valid(test_stats):
+		#test_stats.free()

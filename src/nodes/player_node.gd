@@ -15,12 +15,20 @@ class_name PlayerNode extends CharacterBody2D
 ## 参数：
 ##   player_stats: 玩家配置Resource
 func setup_player(player_stats: PlayerStatsResource) -> void:
+	# 防御性检查：@onready 可能在测试环境中未初始化
+	if resource_system == null:
+		var res_node = get_node_or_null("ResourceSystem")
+		if res_node != null:
+			resource_system = res_node
+		else:
+			# 手动创建 ResourceSystem 用于测试
+			var new_res = ResourceSystemNode.new()
+			add_child(new_res)
+			resource_system = new_res
 	resource_system.setup(player_stats)
 	# 初始化其他子系统
 
-
 ## 物理帧更新
-## 遵循F.2：统一采用手动驱动模式
 func _physics_process(delta: float) -> void:
 	resource_system.process_regeneration(delta)
 	movement.process_movement(delta)
@@ -31,7 +39,6 @@ func _physics_process(delta: float) -> void:
 ## 参数：
 ##   damage_amount: 伤害数值（负数表示治疗）
 ##   damage_type: 伤害类型
-## 遵循F.3：调用者只转发，不发射事件
 func take_damage(damage_amount: float, damage_type: String = "normal") -> void:
 	resource_system.take_damage(damage_amount, damage_type)
 

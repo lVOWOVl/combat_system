@@ -32,8 +32,7 @@ func perform_attack() -> AttackData:
 	# 应用部件修正
 	var modifiers: Dictionary = component_system.get_total_modifiers()
 	if modifiers.has("damage"):
-		attack_data.damage *= modifiers.damage
-
+		attack_data.damage += modifiers.damage  # 加法修正，不是乘法
 	# 攻击速度决定后摇
 	attack_data.recovery_time = 1.0 / weapon_data.attack_speed
 
