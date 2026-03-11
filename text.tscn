@@ -1,17 +1,45 @@
-[gd_scene format=3 uid="uid://cwpgrkxgno0gf"]
+[gd_scene format=4 uid="uid://cwpgrkxgno0gf"]
 
+[ext_resource type="Texture2D" uid="uid://hsommdgjb2if" path="res://img/精灵图-0001.png" id="1_1d40f"]
 [ext_resource type="PackedScene" uid="uid://bvwk8q3o5rjky" path="res://scenes/player.tscn" id="1_aohfb"]
+[ext_resource type="PackedScene" uid="uid://c1md83osw4brk" path="res://scenes/robot.tscn" id="2_g853r"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_g853r"]
-size = Vector2(1092, 169)
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_oskos"]
+texture = ExtResource("1_1d40f")
+0:0/0 = 0
+1:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_gdqd4"]
+sources/0 = SubResource("TileSetAtlasSource_oskos")
+
+[sub_resource type="Gradient" id="Gradient_g853r"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_1d40f"]
+gradient = SubResource("Gradient_g853r")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
 
 [node name="Text" type="Node2D" unique_id=724089572]
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=379384574]
+tile_map_data = PackedByteArray("AAALAB0AAAAAAAAAAAAMAB0AAAAAAAAAAAANAB0AAAAAAAAAAAAOAB0AAAAAAAAAAAAPAB0AAAAAAAAAAAAQAB0AAAAAAAAAAAARAB0AAAAAAAAAAAASAB0AAAAAAAAAAAATAB0AAAAAAAAAAAAUAB0AAAAAAAAAAAAVAB0AAAAAAAAAAAAWAB0AAAAAAAAAAAAXAB0AAAAAAAAAAAAYAB0AAAAAAAAAAAAZAB0AAAAAAAAAAAAaAB0AAAAAAAAAAAAbAB0AAAAAAAAAAAAcAB0AAAAAAAAAAAAdAB0AAAAAAAAAAAA=")
+tile_set = SubResource("TileSet_gdqd4")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1330756449]
-position = Vector2(571, 557)
-shape = SubResource("RectangleShape2D_g853r")
+[node name="robot" parent="." unique_id=1055980895 instance=ExtResource("2_g853r")]
+process_mode = 1
+position = Vector2(226, 374)
 
 [node name="Player" parent="." unique_id=27877294 instance=ExtResource("1_aohfb")]
-position = Vector2(547, 146)
+position = Vector2(419, 351)
+
+[node name="PointLight2D" type="PointLight2D" parent="Player" unique_id=2021783886]
+scale = Vector2(250, 250)
+texture = SubResource("GradientTexture2D_1d40f")
+texture_scale = 0.01
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=1314214024]
+
+[node name="CanvasModulate" type="CanvasModulate" parent="." unique_id=469248743]
+color = Color(0.10224319, 0.10224321, 0.10224321, 1)

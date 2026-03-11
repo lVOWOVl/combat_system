@@ -4,7 +4,6 @@
 class_name MovementNode extends Node
 
 ## 引用场景根节点
-## 遵循F.4：使用owner指向场景根节点，解耦父子节点依赖
 @onready var player_body: CharacterBody2D = owner
 
 ## 移动常量

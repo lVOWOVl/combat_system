@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://c1md83osw4brk"]
+
+[ext_resource type="PackedScene" uid="uid://ej7ryblgqp83" path="res://img/机甲头.glb" id="1_6r00q"]
+[ext_resource type="Script" uid="uid://gqilqdjfokpr" path="res://scenes/sprite_2d.gd" id="1_rcrfe"]
+[ext_resource type="Script" uid="uid://b7rsqwiruuakw" path="res://src/sub_viewport.gd" id="2_i42o3"]
+[ext_resource type="Shader" uid="uid://vp1vft3ixx4m" path="res://scenes/pixel_fiter.gdshader" id="2_xwnim"]
+[ext_resource type="Script" uid="uid://bbxlu3dtxwku" path="res://img/robot.gd" id="3_i42o3"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_q5kvo"]
+shader = ExtResource("2_xwnim")
+shader_parameter/block_size = 6
+shader_parameter/color_levels = 9
+shader_parameter/edge_threshold = 0.3
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_dondh"]
+viewport_path = NodePath("SubViewport")
+
+[node name="robot" type="Node2D" unique_id=1552812122 node_paths=PackedStringArray("drone", "sprite")]
+script = ExtResource("1_rcrfe")
+drone = NodePath("SubViewport/Robot")
+sprite = NodePath("Sprite2D")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=300371305]
+material = SubResource("ShaderMaterial_q5kvo")
+scale = Vector2(0.4, 0.4)
+texture = SubResource("ViewportTexture_dondh")
+
+[node name="SubViewport" type="SubViewport" parent="." unique_id=794589616]
+transparent_bg = true
+script = ExtResource("2_i42o3")
+
+[node name="Robot" parent="SubViewport" unique_id=55971538 instance=ExtResource("1_6r00q")]
+transform = Transform3D(0.7071067, -0.122787796, 0.69636416, 0, 0.98480767, 0.17364816, -0.7071067, -0.122787796, 0.69636416, 0, 0, 0)
+script = ExtResource("3_i42o3")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewport" unique_id=1305684663]
+transform = Transform3D(-1, 6.181724e-08, -6.181724e-08, 0, 0.70710677, 0.70710677, 8.742278e-08, 0.70710677, -0.70710677, 0, 5, -5)
+directional_shadow_mode = 0
+directional_shadow_max_distance = 0.0
+sky_mode = 1
+
+[node name="Camera3D" type="Camera3D" parent="SubViewport" unique_id=463667905]
+transform = Transform3D(-9.508857, 0, 0, 0, 9.508857, 0, 0, 0, -9.508857, 0, 0, -6.0353456)
+projection = 1
+current = true
+size = 8.0

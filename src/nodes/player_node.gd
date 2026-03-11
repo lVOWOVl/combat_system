@@ -20,13 +20,6 @@ func setup_player(player_stats: PlayerStatsResource) -> void:
 		var res_node = get_node_or_null("ResourceSystem")
 		if res_node != null:
 			resource_system = res_node
-		else:
-			# 手动创建 ResourceSystem 用于测试
-			var new_res = ResourceSystemNode.new()
-			add_child(new_res)
-			resource_system = new_res
-	resource_system.setup(player_stats)
-	# 初始化其他子系统
 
 ## 物理帧更新
 func _physics_process(delta: float) -> void:
