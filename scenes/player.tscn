@@ -9,6 +9,10 @@
 [ext_resource type="Script" uid="uid://b532u3xdsjtel" path="res://src/nodes/combat_node.gd" id="4_combat"]
 [ext_resource type="Script" uid="uid://c6opk00egd6ai" path="res://src/nodes/weapon_system_node.gd" id="5_weapon_system"]
 [ext_resource type="Script" uid="uid://luipjpo3fvdc" path="res://src/nodes/weapon_node.gd" id="6_weapon"]
+[ext_resource type="Script" uid="uid://couw105c3bde4" path="res://addons/godot_state_charts/state_chart.gd" id="10_jej6c"]
+[ext_resource type="Script" uid="uid://c1vp0ojjvaby1" path="res://addons/godot_state_charts/parallel_state.gd" id="11_f1ej7"]
+[ext_resource type="Script" uid="uid://jk2jm1g6q853" path="res://addons/godot_state_charts/compound_state.gd" id="12_oprun"]
+[ext_resource type="Script" uid="uid://cytafq8i1y8qm" path="res://addons/godot_state_charts/atomic_state.gd" id="13_a8ls1"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_y4r1p"]
 shader = ExtResource("2_ur7pv")
@@ -54,3 +58,71 @@ script = ExtResource("6_weapon")
 script = ExtResource("6_weapon")
 
 [node name="Sprite2D" type="Sprite2D" parent="WeaponSystem/OffHand" unique_id=2078499275]
+
+[node name="StateChart" type="Node" parent="." unique_id=1331660471]
+script = ExtResource("10_jej6c")
+metadata/_custom_type_script = "uid://couw105c3bde4"
+
+[node name="ParallelState" type="Node" parent="StateChart" unique_id=523775562]
+script = ExtResource("11_f1ej7")
+
+[node name="Movement" type="Node" parent="StateChart/ParallelState" unique_id=497757080]
+script = ExtResource("12_oprun")
+initial_state = NodePath("Idle")
+
+[node name="Idle" type="Node" parent="StateChart/ParallelState/Movement" unique_id=1790989038]
+script = ExtResource("13_a8ls1")
+
+[node name="Run" type="Node" parent="StateChart/ParallelState/Movement" unique_id=1008033756]
+script = ExtResource("13_a8ls1")
+
+[node name="Dash" type="Node" parent="StateChart/ParallelState/Movement" unique_id=1051922212]
+script = ExtResource("13_a8ls1")
+
+[node name="Fall" type="Node" parent="StateChart/ParallelState/Movement" unique_id=20961625]
+script = ExtResource("13_a8ls1")
+
+[node name="GroudCombat" type="Node" parent="StateChart/ParallelState" unique_id=1397617817]
+script = ExtResource("12_oprun")
+initial_state = NodePath("Attack")
+
+[node name="Attack" type="Node" parent="StateChart/ParallelState/GroudCombat" unique_id=1995944140]
+script = ExtResource("13_a8ls1")
+
+[node name="Upatk" type="Node" parent="StateChart/ParallelState/GroudCombat" unique_id=2098212119]
+script = ExtResource("13_a8ls1")
+
+[node name="Duwnatk" type="Node" parent="StateChart/ParallelState/GroudCombat" unique_id=761506739]
+script = ExtResource("13_a8ls1")
+
+[node name="Unique" type="Node" parent="StateChart/ParallelState/GroudCombat" unique_id=1158758565]
+script = ExtResource("13_a8ls1")
+
+[node name="AirCombat" type="Node" parent="StateChart/ParallelState" unique_id=2060655950]
+script = ExtResource("12_oprun")
+initial_state = NodePath("Attack")
+
+[node name="Attack" type="Node" parent="StateChart/ParallelState/AirCombat" unique_id=539359645]
+script = ExtResource("13_a8ls1")
+
+[node name="Upatk" type="Node" parent="StateChart/ParallelState/AirCombat" unique_id=794346485]
+script = ExtResource("13_a8ls1")
+
+[node name="Duwnatk" type="Node" parent="StateChart/ParallelState/AirCombat" unique_id=686605093]
+script = ExtResource("13_a8ls1")
+
+[node name="Unique" type="Node" parent="StateChart/ParallelState/AirCombat" unique_id=1429713323]
+script = ExtResource("13_a8ls1")
+
+[node name="PostureState" type="Node" parent="StateChart/ParallelState" unique_id=1884235089]
+script = ExtResource("12_oprun")
+initial_state = NodePath("Normal")
+
+[node name="Normal" type="Node" parent="StateChart/ParallelState/PostureState" unique_id=129293737]
+script = ExtResource("13_a8ls1")
+
+[node name="HitStun" type="Node" parent="StateChart/ParallelState/PostureState" unique_id=1020992399]
+script = ExtResource("13_a8ls1")
+
+[node name="Knockdown" type="Node" parent="StateChart/ParallelState/PostureState" unique_id=159506537]
+script = ExtResource("13_a8ls1")

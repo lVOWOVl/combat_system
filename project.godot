@@ -15,6 +15,10 @@ run/main_scene="res://scenes/player.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[audio]
+
+buses/default_bus_layout="uid://crvxenc4mmacq"
+
 [autoload]
 
 EventBus="*res://autoloads/event_bus.gd"
@@ -27,7 +31,7 @@ window/size/viewport_height=1080
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gdscript-linter/plugin.cfg", "res://addons/gut/plugin.cfg")
+enabled=PackedStringArray("res://addons/AsepriteWizard/plugin.cfg", "res://addons/edgar.godot/plugin.cfg", "res://addons/gdscript-linter/plugin.cfg", "res://addons/godot_state_charts/plugin.cfg", "res://addons/gut/plugin.cfg", "res://addons/maaacks_game_template/plugin.cfg")
 
 [filesystem]
 
@@ -55,6 +59,39 @@ move_down={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":115,"location":0,"echo":false,"script":null)
 ]
 }
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://addons/maaacks_game_template/base/translations/menus_translations.en.translation", "res://addons/maaacks_game_template/base/translations/menus_translations.fr.translation")
+
+[layer_names]
+
+edgar/layer_1=""
+edgar/layer_2=""
+edgar/layer_3=""
+edgar/layer_4=""
+edgar/layer_5=""
+edgar/layer_6=""
+edgar/layer_7=""
+edgar/layer_8=""
+edgar/layer_9=""
+edgar/layer_10=""
+edgar/layer_11=""
+edgar/layer_12=""
+edgar/layer_13=""
+edgar/layer_14=""
+edgar/layer_15=""
+edgar/layer_16=""
+edgar/layer_17=""
+edgar/layer_18=""
+edgar/layer_19=""
+edgar/layer_20=""
+
+[maaacks_game_template]
+
+disable_install_audio_busses=true
+disable_update_check=false
+disable_install_wizard=true
 
 [physics]
 
