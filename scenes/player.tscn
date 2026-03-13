@@ -11,28 +11,20 @@
 [ext_resource type="Script" uid="uid://luipjpo3fvdc" path="res://src/nodes/weapon_node.gd" id="6_weapon"]
 [ext_resource type="Script" uid="uid://couw105c3bde4" path="res://addons/godot_state_charts/state_chart.gd" id="10_jej6c"]
 [ext_resource type="Script" uid="uid://c1vp0ojjvaby1" path="res://addons/godot_state_charts/parallel_state.gd" id="11_f1ej7"]
+[ext_resource type="Script" uid="uid://cf1nsco3w0mf6" path="res://addons/godot_state_charts/transition.gd" id="11_oprun"]
 [ext_resource type="Script" uid="uid://jk2jm1g6q853" path="res://addons/godot_state_charts/compound_state.gd" id="12_oprun"]
 [ext_resource type="Script" uid="uid://cytafq8i1y8qm" path="res://addons/godot_state_charts/atomic_state.gd" id="13_a8ls1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_y4r1p"]
+size = Vector2(40, 40)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_y4r1p"]
 shader = ExtResource("2_ur7pv")
 shader_parameter/outline_width = 2.0
 shader_parameter/outline_color = Color(0, 0, 0, 1)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_y4r1p"]
-size = Vector2(40, 40)
-
 [node name="Player" type="CharacterBody2D" unique_id=27877294]
 script = ExtResource("1_player")
-
-[node name="Body" type="Sprite2D" parent="." unique_id=2143976303]
-material = SubResource("ShaderMaterial_y4r1p")
-texture = ExtResource("2_smehm")
-
-[node name="Eyes" type="Sprite2D" parent="Body" unique_id=2027492458]
-position = Vector2(0, -1)
-texture = ExtResource("3_ur7pv")
-offset = Vector2(4, 0)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1825982886]
 shape = SubResource("RectangleShape2D_y4r1p")
@@ -72,6 +64,11 @@ initial_state = NodePath("Idle")
 
 [node name="Idle" type="Node" parent="StateChart/ParallelState/Movement" unique_id=1790989038]
 script = ExtResource("13_a8ls1")
+
+[node name="Transition" type="Node" parent="StateChart/ParallelState/Movement/Idle" unique_id=769528458]
+script = ExtResource("11_oprun")
+to = NodePath("../../Run")
+delay_in_seconds = "0.0"
 
 [node name="Run" type="Node" parent="StateChart/ParallelState/Movement" unique_id=1008033756]
 script = ExtResource("13_a8ls1")
@@ -126,3 +123,12 @@ script = ExtResource("13_a8ls1")
 
 [node name="Knockdown" type="Node" parent="StateChart/ParallelState/PostureState" unique_id=159506537]
 script = ExtResource("13_a8ls1")
+
+[node name="Body" type="Sprite2D" parent="." unique_id=2143976303]
+material = SubResource("ShaderMaterial_y4r1p")
+texture = ExtResource("2_smehm")
+
+[node name="Eyes" type="Sprite2D" parent="Body" unique_id=2027492458]
+position = Vector2(0, -1)
+texture = ExtResource("3_ur7pv")
+offset = Vector2(4, 0)
